@@ -30,7 +30,8 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % "0.9.0-M2",
   "io.circe" %% "circe-generic" % "0.9.0-M2",
-  "io.circe" %% "circe-parser" % "0.9.0-M2"
+  "io.circe" %% "circe-parser" % "0.9.0-M2",
+  "org.feijoas" % "mango_2.12" % "0.14"
 )
 
 /** Make sure to fork on run */
