@@ -12,20 +12,10 @@ object Main {
   def main(args: Array[String]): Unit = {
     util.Try({
       val (user, pass) = getCreds
-      val response = getLoginPage
+      val responseLoginPage = getLoginPage
 
-      val postURL = "https://auth.uber.com/login/handleanswer"
-      val payload = Email(Answer(`type` = "VERIFY_INPUT_USERNAME", UserIdentifier(user)),  init = true)
-
-      val emailBody = payload.asJson.toString
-      val requestEmail = Http(postURL)
-        .postData(emailBody)
-        .header("Cookie", response.cookies.mkString("; "))
-        .header("x-csrf-token", response.header("x-csrf-token").get)
-        .header("Content-Type", "application/json")
-      val responseEmail =  requestEmail.asString
-      val body = responseEmail.body
-      println(body)
+      val responsePostEmail = postEmail(responseLoginPage, user)
+      println(responsePostEmail.body)
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
@@ -43,5 +33,19 @@ object Main {
     Preconditions.checkNotNull(user)
     Preconditions.checkNotNull(pass)
     (user, pass)
+  }
+
+  def postEmail(response: HttpResponse[String], user: String): HttpResponse[String] = {
+    val postURL = "https://auth.uber.com/login/handleanswer"
+    val payload = Email(Answer(`type` = "VERIFY_INPUT_USERNAME", UserIdentifier(user)),  init = true)
+
+    val emailBody = payload.asJson.toString
+    val requestEmail = Http(postURL)
+      .postData(emailBody)
+      .header("Cookie", response.cookies.mkString("; "))
+      .header("x-csrf-token", response.header("x-csrf-token").get)
+      .header("Content-Type", "application/json")
+    val responseEmail =  requestEmail.asString
+    responseEmail
   }
 }
