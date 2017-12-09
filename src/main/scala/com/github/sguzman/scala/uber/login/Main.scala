@@ -1,6 +1,7 @@
 package com.github.sguzman.scala.uber.login
 
-import com.github.sguzman.scala.uber.login.typesafe.email.{Answer, Email, UserIdentifier}
+import com.github.sguzman.scala.uber.login.typesafe.email.input.{Answer, Email, UserIdentifier}
+import com.github.sguzman.scala.uber.login.typesafe.email.{Email, UserIdentifier}
 import org.feijoas.mango.common.base.Preconditions
 
 import scala.util.{Failure, Success}
