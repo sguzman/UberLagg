@@ -1,13 +1,14 @@
 package com.github.sguzman.scala.uber.login
 
 import com.github.sguzman.scala.uber.login.typesafe.email.input.{Answer, Email, UserIdentifier}
-import com.github.sguzman.scala.uber.login.typesafe.email.{Email, UserIdentifier}
+import com.github.sguzman.scala.uber.login.typesafe.email.output.EmailResponse
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.parser.decode
 import org.feijoas.mango.common.base.Preconditions
 
 import scala.util.{Failure, Success}
 import scalaj.http.{Http, HttpResponse}
-import io.circe.syntax._
-import io.circe.generic.auto._
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -17,6 +18,7 @@ object Main {
 
       val responsePostEmail = postEmail(responseLoginPage, user)
       println(responsePostEmail.body)
+      println(decode[EmailResponse](responsePostEmail.body))
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
