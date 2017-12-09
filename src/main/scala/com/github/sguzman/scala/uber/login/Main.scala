@@ -21,17 +21,16 @@ object Main {
       val loginPageURL = "https://auth.uber.com/login/?next_url=https%3A%2F%2Fpartners.uber.com"
       val request = Http(loginPageURL)
       val response = request.asString
-      val csrf = response.header("x-csrf-token").get
 
       val postURL = "https://auth.uber.com/login/handleanswer"
-      val payload = Email(Answer(`type` = "VERIFY_INPUT_USERNAME", UserIdentifier(email = user)),  init = true)
+      val payload = Email(Answer(`type` = "VERIFY_INPUT_USERNAME", UserIdentifier(user)),  init = true)
 
       val emailBody = payload.asJson.toString
       val requestEmail = Http(postURL)
         .postData(emailBody)
-        .header("x-csrf-token", csrf)
+        .header("Cookie", response.cookies.mkString("; "))
+        .header("x-csrf-token", response.header("x-csrf-token").get)
         .header("Content-Type", "application/json")
-        .header("Content-Type", response.headers("Set-Cookie").mkString("; "))
       val responseEmail =  requestEmail.asString
       val body = responseEmail.body
       println(body)
