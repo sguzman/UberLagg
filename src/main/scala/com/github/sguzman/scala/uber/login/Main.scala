@@ -18,9 +18,9 @@ object Main {
       val loginPageURL = "https://auth.uber.com/login/?next_url=https%3A%2F%2Fpartners.uber.com"
       val request = Http(loginPageURL)
       val response = request.asString
-      val body = response.body
+      val csrf = response.header("x-csrf-token").get
 
-      println(body)
+      println(csrf)
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
