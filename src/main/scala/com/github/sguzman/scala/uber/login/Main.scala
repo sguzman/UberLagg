@@ -4,6 +4,7 @@ import com.github.sguzman.scala.uber.login.typesafe.email.input.{Answer, Email, 
 import com.github.sguzman.scala.uber.login.typesafe.email.output.EmailResponse
 import com.github.sguzman.scala.uber.login.typesafe.password.input.Password
 import com.github.sguzman.scala.uber.login.typesafe.sms.input.SMS
+import com.github.sguzman.scala.uber.login.typesafe.sms.output.SMSOutput
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import io.circe.syntax._
@@ -31,6 +32,7 @@ object Main {
       val responsePostSMS = postSMS(responsePostPass, responsePostEmail.cookies.mkString("; "), sms)
       println(responsePostSMS.statusLine)
       println(responsePostSMS.body)
+      println(decode[SMSOutput](responsePostSMS.body))
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
