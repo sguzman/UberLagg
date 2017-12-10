@@ -1,10 +1,10 @@
 package com.github.sguzman.scala.uber.login
 
 import com.github.sguzman.scala.uber.login.typesafe.email.input.{Answer, Email, UserIdentifier}
-import com.github.sguzman.scala.uber.login.typesafe.email.output.EmailResponse
+import com.github.sguzman.scala.uber.login.typesafe.password.input.Password
 import io.circe.generic.auto._
-import io.circe.syntax._
 import io.circe.parser.decode
+import io.circe.syntax._
 import org.feijoas.mango.common.base.Preconditions
 
 import scala.util.{Failure, Success}
@@ -17,8 +17,9 @@ object Main {
       val responseLoginPage = getLoginPage
 
       val responsePostEmail = postEmail(responseLoginPage, user)
-      println(responsePostEmail.body)
-      println(decode[EmailResponse](responsePostEmail.body))
+      val responsePostPass = postPassword(responsePostEmail, user)
+      println(responsePostPass.body)
+      println(decode[Password](responsePostPass.body))
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
@@ -50,5 +51,19 @@ object Main {
       .header("Content-Type", "application/json")
     val responseEmail =  requestEmail.asString
     responseEmail
+  }
+
+  def postPassword(response: HttpResponse[String], pass: String): HttpResponse[String] = {
+    val postURL = "https://auth.uber.com/login/handleanswer"
+    val payload = Password(typesafe.password.input.Answer(pass, "VERIFY_PASSWORD"), rememberMe = true)
+
+    val passBody = payload.asJson.toString
+    val requestPass = Http(postURL)
+      .postData(passBody)
+      .header("Cookie", response.cookies.mkString("; "))
+      .header("x-csrf-token", response.header("x-csrf-token").get)
+      .header("Content-Type", "application/json")
+    val responsePass = requestPass.asString
+    responsePass
   }
 }
