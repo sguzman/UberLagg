@@ -1,12 +1,15 @@
 package com.github.sguzman.scala.uber.login
 
 import com.github.sguzman.scala.uber.login.typesafe.email.input.{Answer, Email, UserIdentifier}
+import com.github.sguzman.scala.uber.login.typesafe.email.output.EmailResponse
 import com.github.sguzman.scala.uber.login.typesafe.password.input.Password
+import com.github.sguzman.scala.uber.login.typesafe.sms.input.SMS
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import io.circe.syntax._
 import org.feijoas.mango.common.base.Preconditions
 
+import scala.io.StdIn
 import scala.util.{Failure, Success}
 import scalaj.http.{Http, HttpResponse}
 
@@ -17,9 +20,17 @@ object Main {
       val responseLoginPage = getLoginPage
 
       val responsePostEmail = postEmail(responseLoginPage, user)
-      val responsePostPass = postPassword(responsePostEmail, user)
+      println(responsePostEmail.body)
+      println(decode[EmailResponse](responsePostEmail.body))
+
+      val responsePostPass = postPassword(responsePostEmail, pass)
       println(responsePostPass.body)
-      println(decode[Password](responsePostPass.body))
+      println(decode[EmailResponse](responsePostPass.body))
+
+      val sms = StdIn.readLine("Enter SMS: ")
+      val responsePostSMS = postSMS(responsePostPass, responsePostEmail.cookies.mkString("; "), sms)
+      println(responsePostSMS.statusLine)
+      println(responsePostSMS.body)
     }) match {
       case Success(_) => println("Done")
       case Failure(e) => Console.err.println(e)
@@ -65,5 +76,19 @@ object Main {
       .header("Content-Type", "application/json")
     val responsePass = requestPass.asString
     responsePass
+  }
+
+  def postSMS(response: HttpResponse[String], cookies: String, smsMsg: String): HttpResponse[String] = {
+    val postURL = "https://auth.uber.com/login/handleanswer"
+    val payload = SMS(typesafe.sms.input.Answer(smsMsg, "SMS_OTP"))
+
+    val smsBody = payload.asJson.toString
+    val requestSMS = Http(postURL)
+      .postData(smsBody)
+      .header("Cookie", cookies)
+      .header("x-csrf-token", response.header("x-csrf-token").get)
+      .header("Content-Type", "application/json")
+    val responseSMS = requestSMS.asString
+    responseSMS
   }
 }
